@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthStore>()(
         set({
           user,
           isAuthenticated: !!user,
-          isAdmin: user?.role === 'admin',
+          isAdmin: user?.is_admin ?? false,
         }),
 
       setTokens: (tokens) => set({ tokens }),
@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthStore>()(
           user,
           tokens,
           isAuthenticated: true,
-          isAdmin: user.role === 'admin',
+          isAdmin: user.is_admin,
         }),
 
       logout: () =>
