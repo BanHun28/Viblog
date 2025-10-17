@@ -5,23 +5,19 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/yourusername/viblog/internal/infrastructure/auth"
 )
 
 const (
 	AuthorizationHeader = "Authorization"
 	BearerPrefix        = "Bearer "
 	UserIDKey           = "userID"
-	UserRoleKey         = "userRole"
+	UserEmailKey        = "userEmail"
+	IsAdminKey          = "isAdmin"
 )
 
-// JWTConfig holds JWT configuration
-type JWTConfig struct {
-	Secret string
-}
-
 // AuthMiddleware validates JWT tokens from Authorization header
-func AuthMiddleware(config JWTConfig) gin.HandlerFunc {
+func AuthMiddleware(jwtService *auth.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader(AuthorizationHeader)
 		if authHeader == "" {
@@ -41,32 +37,19 @@ func AuthMiddleware(config JWTConfig) gin.HandlerFunc {
 
 		tokenString := strings.TrimPrefix(authHeader, BearerPrefix)
 
-		// Parse and validate token
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			// Validate signing method
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, jwt.ErrSignatureInvalid
-			}
-			return []byte(config.Secret), nil
-		})
-
-		if err != nil || !token.Valid {
+		// Validate token using JWT service
+		claims, err := jwtService.ValidateAccessToken(tokenString)
+		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "invalid or expired token",
 			})
 			return
 		}
 
-		// Extract claims
-		if claims, ok := token.Claims.(jwt.MapClaims); ok {
-			// Set user context
-			if userID, ok := claims["user_id"].(float64); ok {
-				c.Set(UserIDKey, uint(userID))
-			}
-			if role, ok := claims["role"].(string); ok {
-				c.Set(UserRoleKey, role)
-			}
-		}
+		// Set user context
+		c.Set(UserIDKey, claims.UserID)
+		c.Set(UserEmailKey, claims.Email)
+		c.Set(IsAdminKey, claims.IsAdmin)
 
 		c.Next()
 	}
@@ -75,15 +58,15 @@ func AuthMiddleware(config JWTConfig) gin.HandlerFunc {
 // RequireAdmin requires admin role
 func RequireAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		role, exists := c.Get(UserRoleKey)
+		isAdmin, exists := c.Get(IsAdminKey)
 		if !exists {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"error": "user role not found",
+				"error": "user authentication required",
 			})
 			return
 		}
 
-		if role != "admin" {
+		if !isAdmin.(bool) {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
 				"error": "admin access required",
 			})
@@ -95,12 +78,7 @@ func RequireAdmin() gin.HandlerFunc {
 }
 
 // OptionalAuth validates token if present but doesn't require it
-func OptionalAuth(config JWTConfig) gin.HandlerFunc {
-	return OptionalAuthMiddleware(config)
-}
-
-// OptionalAuthMiddleware validates token if present but doesn't require it
-func OptionalAuthMiddleware(config JWTConfig) gin.HandlerFunc {
+func OptionalAuth(jwtService *auth.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader(AuthorizationHeader)
 		if authHeader == "" {
@@ -111,22 +89,12 @@ func OptionalAuthMiddleware(config JWTConfig) gin.HandlerFunc {
 		// Try to validate token
 		if strings.HasPrefix(authHeader, BearerPrefix) {
 			tokenString := strings.TrimPrefix(authHeader, BearerPrefix)
-			token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, jwt.ErrSignatureInvalid
-				}
-				return []byte(config.Secret), nil
-			})
+			claims, err := jwtService.ValidateAccessToken(tokenString)
 
-			if err == nil && token.Valid {
-				if claims, ok := token.Claims.(jwt.MapClaims); ok {
-					if userID, ok := claims["user_id"].(float64); ok {
-						c.Set(UserIDKey, uint(userID))
-					}
-					if role, ok := claims["role"].(string); ok {
-						c.Set(UserRoleKey, role)
-					}
-				}
+			if err == nil && claims != nil {
+				c.Set(UserIDKey, claims.UserID)
+				c.Set(UserEmailKey, claims.Email)
+				c.Set(IsAdminKey, claims.IsAdmin)
 			}
 		}
 

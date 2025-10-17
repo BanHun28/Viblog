@@ -5,6 +5,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/yourusername/viblog/internal/config"
+	"github.com/yourusername/viblog/internal/infrastructure/auth"
 	"github.com/yourusername/viblog/internal/interface/http/handler"
 	"github.com/yourusername/viblog/internal/interface/http/middleware"
 	"go.uber.org/zap"
@@ -12,9 +13,10 @@ import (
 
 // Router holds the HTTP router and its dependencies
 type Router struct {
-	engine *gin.Engine
-	cfg    *config.Config
-	logger *zap.Logger
+	engine     *gin.Engine
+	cfg        *config.Config
+	logger     *zap.Logger
+	jwtService *auth.JWTService
 
 	// Handlers
 	userHandler         *handler.UserHandler
@@ -28,6 +30,7 @@ type Router struct {
 func New(
 	cfg *config.Config,
 	logger *zap.Logger,
+	jwtService *auth.JWTService,
 	userHandler *handler.UserHandler,
 	postHandler *handler.PostHandler,
 	commentHandler *handler.CommentHandler,
@@ -45,6 +48,7 @@ func New(
 		engine:              engine,
 		cfg:                 cfg,
 		logger:              logger,
+		jwtService:          jwtService,
 		userHandler:         userHandler,
 		postHandler:         postHandler,
 		commentHandler:      commentHandler,
@@ -99,8 +103,7 @@ func (r *Router) setupAuthRoutes(rg *gin.RouterGroup) {
 
 		// Protected routes
 		protected := auth.Group("")
-		jwtConfig := middleware.JWTConfig{Secret: r.cfg.JWT.Secret}
-		protected.Use(middleware.AuthMiddleware(jwtConfig))
+		protected.Use(middleware.AuthMiddleware(r.jwtService))
 		{
 			protected.POST("/logout", r.userHandler.Logout)
 			protected.GET("/me", r.userHandler.GetProfile)
@@ -111,8 +114,6 @@ func (r *Router) setupAuthRoutes(rg *gin.RouterGroup) {
 
 // setupPostRoutes configures post-related routes
 func (r *Router) setupPostRoutes(rg *gin.RouterGroup) {
-	jwtConfig := middleware.JWTConfig{Secret: r.cfg.JWT.Secret}
-
 	posts := rg.Group("/posts")
 	{
 		// Public routes
@@ -123,7 +124,7 @@ func (r *Router) setupPostRoutes(rg *gin.RouterGroup) {
 
 		// Protected routes (admin only for write operations)
 		protected := posts.Group("")
-		protected.Use(middleware.AuthMiddleware(jwtConfig))
+		protected.Use(middleware.AuthMiddleware(r.jwtService))
 		protected.Use(middleware.RequireAdmin())
 		{
 			protected.POST("", r.postHandler.Create)
@@ -133,7 +134,7 @@ func (r *Router) setupPostRoutes(rg *gin.RouterGroup) {
 
 		// Protected routes (authenticated users)
 		userProtected := posts.Group("")
-		userProtected.Use(middleware.AuthMiddleware(jwtConfig))
+		userProtected.Use(middleware.AuthMiddleware(r.jwtService))
 		{
 			userProtected.POST("/:id/like", r.postHandler.Like)
 			userProtected.DELETE("/:id/like", r.postHandler.Unlike)
@@ -159,8 +160,6 @@ func (r *Router) setupPostRoutes(rg *gin.RouterGroup) {
 
 // setupCommentRoutes configures comment-related routes
 func (r *Router) setupCommentRoutes(rg *gin.RouterGroup) {
-	jwtConfig := middleware.JWTConfig{Secret: r.cfg.JWT.Secret}
-
 	comments := rg.Group("/comments")
 	{
 		// Public routes - list comments for a post
@@ -174,17 +173,17 @@ func (r *Router) setupCommentRoutes(rg *gin.RouterGroup) {
 		))
 		{
 			// Optional auth (allows both anonymous and authenticated)
-			rateLimited.POST("/post/:postId", middleware.OptionalAuth(jwtConfig), r.commentHandler.Create)
-			rateLimited.PUT("/:id", middleware.OptionalAuth(jwtConfig), r.commentHandler.Update)
-			rateLimited.DELETE("/:id", middleware.OptionalAuth(jwtConfig), r.commentHandler.Delete)
+			rateLimited.POST("/post/:postId", middleware.OptionalAuth(r.jwtService), r.commentHandler.Create)
+			rateLimited.PUT("/:id", middleware.OptionalAuth(r.jwtService), r.commentHandler.Update)
+			rateLimited.DELETE("/:id", middleware.OptionalAuth(r.jwtService), r.commentHandler.Delete)
 
 			// Reply routes (nested comments)
 			rateLimited.GET("/:id/replies", r.commentHandler.ListReplies)
-			rateLimited.POST("/:id/replies", middleware.OptionalAuth(jwtConfig), r.commentHandler.CreateReply)
+			rateLimited.POST("/:id/replies", middleware.OptionalAuth(r.jwtService), r.commentHandler.CreateReply)
 
 			// Authenticated only
 			authenticated := rateLimited.Group("")
-			authenticated.Use(middleware.AuthMiddleware(jwtConfig))
+			authenticated.Use(middleware.AuthMiddleware(r.jwtService))
 			{
 				authenticated.POST("/:id/like", r.commentHandler.Like)
 				authenticated.DELETE("/:id/like", r.commentHandler.Unlike)
@@ -195,10 +194,8 @@ func (r *Router) setupCommentRoutes(rg *gin.RouterGroup) {
 
 // setupNotificationRoutes configures notification-related routes
 func (r *Router) setupNotificationRoutes(rg *gin.RouterGroup) {
-	jwtConfig := middleware.JWTConfig{Secret: r.cfg.JWT.Secret}
-
 	notifications := rg.Group("/notifications")
-	notifications.Use(middleware.AuthMiddleware(jwtConfig))
+	notifications.Use(middleware.AuthMiddleware(r.jwtService))
 	{
 		notifications.GET("", r.notificationHandler.List)
 		notifications.GET("/unread", r.notificationHandler.ListUnread)
@@ -209,10 +206,8 @@ func (r *Router) setupNotificationRoutes(rg *gin.RouterGroup) {
 
 // setupAdminRoutes configures admin-related routes
 func (r *Router) setupAdminRoutes(rg *gin.RouterGroup) {
-	jwtConfig := middleware.JWTConfig{Secret: r.cfg.JWT.Secret}
-
 	admin := rg.Group("/admin")
-	admin.Use(middleware.AuthMiddleware(jwtConfig))
+	admin.Use(middleware.AuthMiddleware(r.jwtService))
 	admin.Use(middleware.RequireAdmin())
 	{
 		// Dashboard
