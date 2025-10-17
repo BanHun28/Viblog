@@ -1,8 +1,6 @@
 package middleware
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,33 +9,12 @@ type CORSConfig struct {
 	AllowedOrigins   []string
 	AllowedMethods   []string
 	AllowedHeaders   []string
-	ExposedHeaders   []string
 	AllowCredentials bool
-	MaxAge           int
 }
 
-// DefaultCORSConfig returns default CORS configuration for development
-func DefaultCORSConfig() CORSConfig {
-	return CORSConfig{
-		AllowedOrigins:   []string{"http://localhost:30001"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		ExposedHeaders:   []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           86400, // 24 hours
-	}
-}
-
-// ProductionCORSConfig returns CORS configuration for production
-func ProductionCORSConfig(allowedOrigins []string) CORSConfig {
-	return CORSConfig{
-		AllowedOrigins:   allowedOrigins,
-		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
-		ExposedHeaders:   []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           86400,
-	}
+// CORS handles Cross-Origin Resource Sharing
+func CORS(config CORSConfig) gin.HandlerFunc {
+	return CORSMiddleware(config)
 }
 
 // CORSMiddleware handles Cross-Origin Resource Sharing
@@ -93,20 +70,6 @@ func CORSMiddleware(config CORSConfig) gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Headers", headers)
 		}
 
-		if len(config.ExposedHeaders) > 0 {
-			exposed := ""
-			for i, header := range config.ExposedHeaders {
-				if i > 0 {
-					exposed += ", "
-				}
-				exposed += header
-			}
-			c.Header("Access-Control-Expose-Headers", exposed)
-		}
-
-		if config.MaxAge > 0 {
-			c.Header("Access-Control-Max-Age", fmt.Sprintf("%d", config.MaxAge))
-		}
 
 		// Handle preflight requests
 		if c.Request.Method == "OPTIONS" {

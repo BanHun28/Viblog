@@ -90,6 +90,12 @@ func (rl *RateLimiter) cleanup() {
 	}
 }
 
+// RateLimit creates a rate limiting middleware
+func RateLimit(rate int, window time.Duration) gin.HandlerFunc {
+	limiter := NewRateLimiter(rate, window)
+	return RateLimitMiddleware(limiter)
+}
+
 // RateLimitMiddleware creates a rate limiting middleware
 func RateLimitMiddleware(limiter *RateLimiter) gin.HandlerFunc {
 	return func(c *gin.Context) {
