@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: viblog-postgres-dev
+    environment:
+      POSTGRES_USER: viblog
+      POSTGRES_PASSWORD: viblog_password
+      POSTGRES_DB: viblog
+    ports:
+      - "30002:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - viblog-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend/Dockerfile.dev
+    container_name: viblog-backend-dev
+    env_file:
+      - .env.dev
+    ports:
+      - "30000:30000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - postgres
+    networks:
+      - viblog-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile.dev
+    container_name: viblog-frontend-dev
+    ports:
+      - "30001:30001"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - viblog-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: viblog-prometheus
+    ports:
+      - "30003:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - viblog-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: viblog-grafana
+    ports:
+      - "30004:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - viblog-network
+
+volumes:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  viblog-network:
+    driver: bridge
