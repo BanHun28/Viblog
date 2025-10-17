@@ -6,7 +6,10 @@
     "dev": "next dev -p 30001",
     "build": "next build",
     "start": "next start -p 30001",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "dependencies": {
     "next": "^14.0.0",
@@ -15,12 +18,19 @@
     "zustand": "^4.4.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^14.1.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vitest/ui": "^1.0.4",
     "autoprefixer": "^10.0.1",
+    "eslint": "^8.55.0",
+    "eslint-config-next": "^14.0.0",
+    "happy-dom": "^12.10.3",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^1.0.4"
   }
 }

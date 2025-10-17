@@ -2,9 +2,10 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, frontend2 ]
     paths:
       - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
   pull_request:
     branches: [ main, develop ]
     paths:
@@ -13,30 +14,30 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Install pnpm
       uses: pnpm/action-setup@v2
       with:
-        version: 9
-    
+        version: 10
+
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '20'
         cache: 'pnpm'
         cache-dependency-path: frontend/pnpm-lock.yaml
-    
+
     - name: Install dependencies
       working-directory: ./frontend
       run: pnpm install --frozen-lockfile
-    
+
     - name: Lint
       working-directory: ./frontend
       run: pnpm run lint
-    
+
     - name: Build
       working-directory: ./frontend
       run: pnpm run build
