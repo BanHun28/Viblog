@@ -40,4 +40,4 @@ jobs:
     
     - name: Build
       working-directory: ./backend
-      run: go build -v ./cmd/api
+      run: go build -v -o bin/api ./cmd/api
