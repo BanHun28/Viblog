@@ -4,6 +4,7 @@
  */
 
 import { getLocalStorage, StorageKeys } from './storage';
+import { buildQueryString as buildQuery } from './url';
 
 /**
  * API configuration
@@ -51,21 +52,8 @@ export function buildHeaders(customHeaders?: Record<string, string>): HeadersIni
   };
 }
 
-/**
- * Build query string from params
- */
-export function buildQueryString(params: Record<string, any>): string {
-  const searchParams = new URLSearchParams();
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      searchParams.append(key, String(value));
-    }
-  });
-
-  const queryString = searchParams.toString();
-  return queryString ? `?${queryString}` : '';
-}
+// Re-export buildQueryString from url.ts for backward compatibility
+export { buildQueryString } from './url';
 
 /**
  * Sleep utility for retry logic

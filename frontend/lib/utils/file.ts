@@ -30,7 +30,7 @@ export function validateFileSize(file: File, maxSize: number = IMAGE_CONFIG.MAX_
  */
 export function validateFileType(
   file: File,
-  allowedTypes: string[] = IMAGE_CONFIG.ALLOWED_TYPES
+  allowedTypes: readonly string[] = IMAGE_CONFIG.ALLOWED_TYPES
 ): FileValidationResult {
   if (!allowedTypes.includes(file.type)) {
     return {
