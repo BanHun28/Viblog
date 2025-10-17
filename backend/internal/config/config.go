@@ -41,6 +41,7 @@ type DatabaseConfig struct {
 // JWTConfig holds JWT-related configuration
 type JWTConfig struct {
 	Secret              string
+	RefreshSecret       string
 	AccessTokenExpires  time.Duration
 	RefreshTokenExpires time.Duration
 }
@@ -95,6 +96,7 @@ func Load() (*Config, error) {
 		},
 		JWT: JWTConfig{
 			Secret:              getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
+			RefreshSecret:       getEnv("JWT_REFRESH_SECRET", "your-refresh-secret-key-change-in-production"),
 			AccessTokenExpires:  getEnvAsDuration("JWT_ACCESS_TOKEN_EXPIRES", 15*time.Minute),
 			RefreshTokenExpires: getEnvAsDuration("JWT_REFRESH_TOKEN_EXPIRES", 168*time.Hour),
 		},
@@ -142,6 +144,9 @@ func (c *Config) Validate() error {
 	}
 	if c.JWT.Secret == "" {
 		return fmt.Errorf("JWT_SECRET is required")
+	}
+	if c.JWT.RefreshSecret == "" {
+		return fmt.Errorf("JWT_REFRESH_SECRET is required")
 	}
 	return nil
 }

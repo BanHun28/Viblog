@@ -4,16 +4,33 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yourusername/viblog/internal/infrastructure/auth"
+	"github.com/yourusername/viblog/internal/interface/http/dto"
+	"github.com/yourusername/viblog/internal/usecase/user"
+	"github.com/yourusername/viblog/pkg/errors"
 )
 
 // UserHandler handles user-related HTTP requests
 type UserHandler struct {
-	// TODO: Add use case dependencies
+	registerUseCase      *user.RegisterUseCase
+	loginUseCase         *user.LoginUseCase
+	updateProfileUseCase *user.UpdateProfileUseCase
+	jwtService           *auth.JWTService
 }
 
 // NewUserHandler creates a new UserHandler
-func NewUserHandler(useCase interface{}) *UserHandler {
-	return &UserHandler{}
+func NewUserHandler(
+	registerUseCase *user.RegisterUseCase,
+	loginUseCase *user.LoginUseCase,
+	updateProfileUseCase *user.UpdateProfileUseCase,
+	jwtService *auth.JWTService,
+) *UserHandler {
+	return &UserHandler{
+		registerUseCase:      registerUseCase,
+		loginUseCase:         loginUseCase,
+		updateProfileUseCase: updateProfileUseCase,
+		jwtService:           jwtService,
+	}
 }
 
 // Register handles user registration
@@ -22,13 +39,43 @@ func NewUserHandler(useCase interface{}) *UserHandler {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body object{email=string,password=string,nickname=string} true "Registration request"
-// @Success 201 {object} object{message=string,user=object{id=uint,email=string,nickname=string,created_at=string}}
+// @Param request body dto.RegisterRequest true "Registration request"
+// @Success 201 {object} dto.UserResponse
 // @Failure 400 {object} object{error=string}
 // @Failure 409 {object} object{error=string} "Email or nickname already exists"
 // @Router /auth/register [post]
 func (h *UserHandler) Register(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "Register endpoint - TODO"})
+	var req dto.RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Execute registration use case
+	newUser, err := h.registerUseCase.Execute(c.Request.Context(), user.RegisterInput{
+		Email:    req.Email,
+		Password: req.Password,
+		Nickname: req.Nickname,
+	})
+
+	if err != nil {
+		statusCode := errors.GetStatusCode(err)
+		c.JSON(statusCode, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert to response DTO
+	userResp := dto.UserResponse{
+		ID:        newUser.ID,
+		Email:     newUser.Email,
+		Nickname:  newUser.Nickname,
+		AvatarURL: newUser.AvatarURL,
+		Bio:       newUser.Bio,
+		IsAdmin:   newUser.IsAdmin,
+		CreatedAt: newUser.CreatedAt,
+	}
+
+	c.JSON(http.StatusCreated, userResp)
 }
 
 // Login handles user login
@@ -37,13 +84,60 @@ func (h *UserHandler) Register(c *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body object{email=string,password=string} true "Login credentials"
-// @Success 200 {object} object{access_token=string,refresh_token=string,user=object{id=uint,email=string,nickname=string,is_admin=bool}}
+// @Param request body dto.LoginRequest true "Login credentials"
+// @Success 200 {object} dto.AuthResponse
 // @Failure 400 {object} object{error=string}
 // @Failure 401 {object} object{error=string} "Invalid credentials"
 // @Router /auth/login [post]
 func (h *UserHandler) Login(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "Login endpoint - TODO"})
+	var req dto.LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Execute login use case
+	authenticatedUser, err := h.loginUseCase.Execute(c.Request.Context(), user.LoginInput{
+		Email:    req.Email,
+		Password: req.Password,
+	})
+
+	if err != nil {
+		statusCode := errors.GetStatusCode(err)
+		c.JSON(statusCode, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Generate tokens
+	accessToken, err := h.jwtService.GenerateAccessToken(authenticatedUser.ID, authenticatedUser.Email, authenticatedUser.IsAdmin)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate access token"})
+		return
+	}
+
+	refreshToken, err := h.jwtService.GenerateRefreshToken(authenticatedUser.ID, authenticatedUser.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate refresh token"})
+		return
+	}
+
+	// Convert to response DTO
+	authResp := dto.AuthResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		User: dto.UserResponse{
+			ID:          authenticatedUser.ID,
+			Email:       authenticatedUser.Email,
+			Nickname:    authenticatedUser.Nickname,
+			AvatarURL:   authenticatedUser.AvatarURL,
+			Bio:         authenticatedUser.Bio,
+			IsAdmin:     authenticatedUser.IsAdmin,
+			CreatedAt:   authenticatedUser.CreatedAt,
+			LastLoginAt: authenticatedUser.LastLoginAt,
+		},
+	}
+
+	c.JSON(http.StatusOK, authResp)
 }
 
 // RefreshToken handles token refresh
@@ -52,13 +146,35 @@ func (h *UserHandler) Login(c *gin.Context) {
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param request body object{refresh_token=string} true "Refresh token"
-// @Success 200 {object} object{access_token=string}
+// @Param request body dto.RefreshTokenRequest true "Refresh token"
+// @Success 200 {object} dto.TokenResponse
 // @Failure 400 {object} object{error=string}
 // @Failure 401 {object} object{error=string} "Invalid or expired refresh token"
 // @Router /auth/refresh [post]
 func (h *UserHandler) RefreshToken(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "RefreshToken endpoint - TODO"})
+	var req dto.RefreshTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate refresh token
+	claims, err := h.jwtService.ValidateRefreshToken(req.RefreshToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired refresh token"})
+		return
+	}
+
+	// Generate new access token
+	accessToken, err := h.jwtService.GenerateAccessToken(claims.UserID, claims.Email, claims.IsAdmin)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate access token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.TokenResponse{
+		AccessToken: accessToken,
+	})
 }
 
 // Logout handles user logout
@@ -72,7 +188,9 @@ func (h *UserHandler) RefreshToken(c *gin.Context) {
 // @Failure 401 {object} object{error=string}
 // @Router /auth/logout [post]
 func (h *UserHandler) Logout(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "Logout endpoint - TODO"})
+	// In a stateless JWT setup, logout is handled client-side by removing tokens
+	// In production, you might want to implement token blacklisting
+	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
 }
 
 // GetProfile retrieves user profile
@@ -82,11 +200,30 @@ func (h *UserHandler) Logout(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} object{user=object{id=uint,email=string,nickname=string,avatar_url=string,bio=string,is_admin=bool,created_at=string}}
+// @Success 200 {object} dto.UserResponse
 // @Failure 401 {object} object{error=string}
 // @Router /auth/me [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "GetProfile endpoint - TODO"})
+	// Get user ID from context (set by auth middleware)
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Get user email and admin status from context
+	email, _ := c.Get("userEmail")
+	isAdmin, _ := c.Get("isAdmin")
+
+	// Create user response from context data
+	// In production, you might want to fetch fresh data from database
+	userResp := dto.UserResponse{
+		ID:      userID.(uint),
+		Email:   email.(string),
+		IsAdmin: isAdmin.(bool),
+	}
+
+	c.JSON(http.StatusOK, userResp)
 }
 
 // UpdateProfile updates user profile
@@ -96,12 +233,51 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body object{nickname=string,avatar_url=string,bio=string} true "Profile update request"
-// @Success 200 {object} object{message=string,user=object{id=uint,email=string,nickname=string,avatar_url=string,bio=string}}
+// @Param request body dto.UpdateProfileRequest true "Profile update request"
+// @Success 200 {object} dto.UserResponse
 // @Failure 400 {object} object{error=string}
 // @Failure 401 {object} object{error=string}
 // @Failure 409 {object} object{error=string} "Nickname already exists"
 // @Router /auth/me [put]
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "UpdateProfile endpoint - TODO"})
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var req dto.UpdateProfileRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Execute update profile use case
+	updatedUser, err := h.updateProfileUseCase.Execute(c.Request.Context(), user.UpdateProfileInput{
+		UserID:    userID.(uint),
+		Nickname:  req.Nickname,
+		AvatarURL: req.AvatarURL,
+		Bio:       req.Bio,
+	})
+
+	if err != nil {
+		statusCode := errors.GetStatusCode(err)
+		c.JSON(statusCode, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert to response DTO
+	userResp := dto.UserResponse{
+		ID:          updatedUser.ID,
+		Email:       updatedUser.Email,
+		Nickname:    updatedUser.Nickname,
+		AvatarURL:   updatedUser.AvatarURL,
+		Bio:         updatedUser.Bio,
+		IsAdmin:     updatedUser.IsAdmin,
+		CreatedAt:   updatedUser.CreatedAt,
+		LastLoginAt: updatedUser.LastLoginAt,
+	}
+
+	c.JSON(http.StatusOK, userResp)
 }
