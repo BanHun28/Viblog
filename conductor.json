@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "setup": "echo 'Setting up backend...' && cd backend && go mod tidy && echo 'Setting up frontend...' && cd ../frontend && pnpm install && echo 'Setup complete!'"
+  }
+}
