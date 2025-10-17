@@ -14,6 +14,11 @@ type ErrorResponse struct {
 	Details map[string]interface{} `json:"details,omitempty"`
 }
 
+// ErrorHandler handles errors in a standardized way
+func ErrorHandler() gin.HandlerFunc {
+	return ErrorHandlerMiddleware()
+}
+
 // ErrorHandlerMiddleware handles errors in a standardized way
 func ErrorHandlerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {

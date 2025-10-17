@@ -7,6 +7,16 @@ import (
 	"go.uber.org/zap"
 )
 
+// Logger logs HTTP requests using Zap logger
+func Logger(logger *zap.Logger) gin.HandlerFunc {
+	return LoggerMiddleware(logger)
+}
+
+// Recovery recovers from panics and logs them
+func Recovery(logger *zap.Logger) gin.HandlerFunc {
+	return RecoveryMiddleware(logger)
+}
+
 // LoggerMiddleware logs HTTP requests using Zap logger
 func LoggerMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {

@@ -1,0 +1,1698 @@
+basePath: /api/v1
+host: localhost:30000
+info:
+  contact:
+    email: support@viblog.io
+    name: API Support
+    url: http://www.viblog.io/support
+  description: Personal Blog Platform API with Clean Architecture
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Viblog API
+  version: "1.0"
+paths:
+  /admin/categories:
+    get:
+      consumes:
+      - application/json
+      description: Get all categories for management (Admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all categories (Admin)
+      tags:
+      - admin
+    post:
+      consumes:
+      - application/json
+      description: Create a new blog category (Admin only)
+      parameters:
+      - description: Category creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create category
+      tags:
+      - admin
+  /admin/categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a category (Admin only)
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete category
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update an existing category (Admin only)
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Category update request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update category
+      tags:
+      - admin
+  /admin/comments:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of all comments (Admin only)
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all comments
+      tags:
+      - admin
+  /admin/comments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a comment (Admin only)
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete comment
+      tags:
+      - admin
+  /admin/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Get dashboard statistics and metrics (Admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get admin dashboard
+      tags:
+      - admin
+  /admin/tags:
+    get:
+      consumes:
+      - application/json
+      description: Get all tags for management (Admin only)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all tags (Admin)
+      tags:
+      - admin
+    post:
+      consumes:
+      - application/json
+      description: Create a new blog tag (Admin only)
+      parameters:
+      - description: Tag creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create tag
+      tags:
+      - admin
+  /admin/tags/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a tag (Admin only)
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete tag
+      tags:
+      - admin
+    put:
+      consumes:
+      - application/json
+      description: Update an existing tag (Admin only)
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Tag update request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update tag
+      tags:
+      - admin
+  /admin/users:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of all users (Admin only)
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List all users
+      tags:
+      - admin
+  /admin/users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user account (Admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete user
+      tags:
+      - admin
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return access/refresh tokens
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              access_token:
+                type: string
+              refresh_token:
+                type: string
+              user:
+                properties:
+                  email:
+                    type: string
+                  id:
+                    type: integer
+                  is_admin:
+                    type: boolean
+                  nickname:
+                    type: string
+                type: object
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Invalid credentials
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: User login
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidate refresh token and logout user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: User logout
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get current authenticated user's profile information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              user:
+                properties:
+                  avatar_url:
+                    type: string
+                  bio:
+                    type: string
+                  created_at:
+                    type: string
+                  email:
+                    type: string
+                  id:
+                    type: integer
+                  is_admin:
+                    type: boolean
+                  nickname:
+                    type: string
+                type: object
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get user profile
+      tags:
+      - auth
+    put:
+      consumes:
+      - application/json
+      description: Update current user's profile (nickname, avatar_url, bio)
+      parameters:
+      - description: Profile update request
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            avatar_url:
+              type: string
+            bio:
+              type: string
+            nickname:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+              user:
+                properties:
+                  avatar_url:
+                    type: string
+                  bio:
+                    type: string
+                  email:
+                    type: string
+                  id:
+                    type: integer
+                  nickname:
+                    type: string
+                type: object
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "409":
+          description: Nickname already exists
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update user profile
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get a new access token using refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            refresh_token:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              access_token:
+                type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Invalid or expired refresh token
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Refresh access token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account with email, password, and nickname
+      parameters:
+      - description: Registration request
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            nickname:
+              type: string
+            password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              message:
+                type: string
+              user:
+                properties:
+                  created_at:
+                    type: string
+                  email:
+                    type: string
+                  id:
+                    type: integer
+                  nickname:
+                    type: string
+                type: object
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "409":
+          description: Email or nickname already exists
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - auth
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Get all blog categories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List categories
+      tags:
+      - categories
+  /categories/{slug}/posts:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated posts for a specific category
+      parameters:
+      - description: Category slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get posts by category
+      tags:
+      - categories
+  /comments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a comment (Owner or Admin)
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete comment
+      tags:
+      - comments
+    put:
+      consumes:
+      - application/json
+      description: Update an existing comment (Owner or Admin)
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Comment update request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update comment
+      tags:
+      - comments
+  /comments/{id}/like:
+    delete:
+      consumes:
+      - application/json
+      description: Remove like from a comment (Authenticated users only)
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Unlike comment
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: Add like to a comment (Authenticated users only)
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Like comment
+      tags:
+      - comments
+  /comments/{id}/replies:
+    get:
+      consumes:
+      - application/json
+      description: Get all replies to a specific comment (nested comments)
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List replies
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: Create a reply to an existing comment (Anonymous or Authenticated)
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Reply creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create reply
+      tags:
+      - comments
+  /comments/post/{postId}:
+    get:
+      consumes:
+      - application/json
+      description: Get all comments for a specific post
+      parameters:
+      - description: Post ID
+        in: path
+        name: postId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List comments
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: Create a new comment on a post (Anonymous or Authenticated)
+      parameters:
+      - description: Post ID
+        in: path
+        name: postId
+        required: true
+        type: integer
+      - description: Comment creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create comment
+      tags:
+      - comments
+  /notifications:
+    get:
+      consumes:
+      - application/json
+      description: Get all notifications for the current user
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List notifications
+      tags:
+      - notifications
+  /notifications/{id}/read:
+    put:
+      consumes:
+      - application/json
+      description: Mark a specific notification as read
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Mark notification as read
+      tags:
+      - notifications
+  /notifications/read-all:
+    put:
+      consumes:
+      - application/json
+      description: Mark all notifications as read for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Mark all notifications as read
+      tags:
+      - notifications
+  /notifications/unread:
+    get:
+      consumes:
+      - application/json
+      description: Get all unread notifications for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List unread notifications
+      tags:
+      - notifications
+  /posts:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of published posts
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List posts
+      tags:
+      - posts
+    post:
+      consumes:
+      - application/json
+      description: Create a new blog post (Admin only)
+      parameters:
+      - description: Post creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create new post
+      tags:
+      - posts
+  /posts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a post (Admin only)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete post
+      tags:
+      - posts
+    get:
+      consumes:
+      - application/json
+      description: Get detailed post information
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get post by ID
+      tags:
+      - posts
+    put:
+      consumes:
+      - application/json
+      description: Update existing post (Admin only)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Post update request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update post
+      tags:
+      - posts
+  /posts/{id}/bookmark:
+    delete:
+      consumes:
+      - application/json
+      description: Remove post from bookmarks (Authenticated users only)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Remove bookmark
+      tags:
+      - posts
+    post:
+      consumes:
+      - application/json
+      description: Add post to bookmarks (Authenticated users only)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Bookmark a post
+      tags:
+      - posts
+  /posts/{id}/like:
+    delete:
+      consumes:
+      - application/json
+      description: Remove like from a post (Authenticated users only)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Unlike a post
+      tags:
+      - posts
+    post:
+      consumes:
+      - application/json
+      description: Add like to a post (Authenticated users only)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Like a post
+      tags:
+      - posts
+  /posts/{id}/view:
+    post:
+      consumes:
+      - application/json
+      description: Increment post view count with IP-based duplicate prevention (24-hour
+        window)
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: View count incremented or already counted
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Increment view count
+      tags:
+      - posts
+  /posts/search:
+    get:
+      consumes:
+      - application/json
+      description: Full-text search across posts
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Search posts
+      tags:
+      - posts
+  /tags:
+    get:
+      consumes:
+      - application/json
+      description: Get all blog tags
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List tags
+      tags:
+      - tags
+  /tags/{slug}/posts:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated posts for a specific tag
+      parameters:
+      - description: Tag slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get posts by tag
+      tags:
+      - tags
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -17,7 +17,7 @@ const (
 
 // JWTConfig holds JWT configuration
 type JWTConfig struct {
-	SecretKey string
+	Secret string
 }
 
 // AuthMiddleware validates JWT tokens from Authorization header
@@ -47,7 +47,7 @@ func AuthMiddleware(config JWTConfig) gin.HandlerFunc {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, jwt.ErrSignatureInvalid
 			}
-			return []byte(config.SecretKey), nil
+			return []byte(config.Secret), nil
 		})
 
 		if err != nil || !token.Valid {
@@ -72,8 +72,8 @@ func AuthMiddleware(config JWTConfig) gin.HandlerFunc {
 	}
 }
 
-// AdminMiddleware requires admin role
-func AdminMiddleware() gin.HandlerFunc {
+// RequireAdmin requires admin role
+func RequireAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exists := c.Get(UserRoleKey)
 		if !exists {
@@ -94,6 +94,11 @@ func AdminMiddleware() gin.HandlerFunc {
 	}
 }
 
+// OptionalAuth validates token if present but doesn't require it
+func OptionalAuth(config JWTConfig) gin.HandlerFunc {
+	return OptionalAuthMiddleware(config)
+}
+
 // OptionalAuthMiddleware validates token if present but doesn't require it
 func OptionalAuthMiddleware(config JWTConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -110,7 +115,7 @@ func OptionalAuthMiddleware(config JWTConfig) gin.HandlerFunc {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, jwt.ErrSignatureInvalid
 				}
-				return []byte(config.SecretKey), nil
+				return []byte(config.Secret), nil
 			})
 
 			if err == nil && token.Valid {
