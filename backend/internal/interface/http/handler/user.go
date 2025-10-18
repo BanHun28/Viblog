@@ -14,6 +14,7 @@ import (
 type UserHandler struct {
 	registerUseCase      *user.RegisterUseCase
 	loginUseCase         *user.LoginUseCase
+	getProfileUseCase    *user.GetProfileUseCase
 	updateProfileUseCase *user.UpdateProfileUseCase
 	jwtService           *auth.JWTService
 }
@@ -22,12 +23,14 @@ type UserHandler struct {
 func NewUserHandler(
 	registerUseCase *user.RegisterUseCase,
 	loginUseCase *user.LoginUseCase,
+	getProfileUseCase *user.GetProfileUseCase,
 	updateProfileUseCase *user.UpdateProfileUseCase,
 	jwtService *auth.JWTService,
 ) *UserHandler {
 	return &UserHandler{
 		registerUseCase:      registerUseCase,
 		loginUseCase:         loginUseCase,
+		getProfileUseCase:    getProfileUseCase,
 		updateProfileUseCase: updateProfileUseCase,
 		jwtService:           jwtService,
 	}
@@ -211,16 +214,27 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	// Get user email and admin status from context
-	email, _ := c.Get("userEmail")
-	isAdmin, _ := c.Get("isAdmin")
+	// Execute get profile use case
+	userProfile, err := h.getProfileUseCase.Execute(c.Request.Context(), user.GetProfileInput{
+		UserID: userID.(uint),
+	})
 
-	// Create user response from context data
-	// In production, you might want to fetch fresh data from database
+	if err != nil {
+		statusCode := errors.GetStatusCode(err)
+		c.JSON(statusCode, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert to response DTO
 	userResp := dto.UserResponse{
-		ID:      userID.(uint),
-		Email:   email.(string),
-		IsAdmin: isAdmin.(bool),
+		ID:          userProfile.ID,
+		Email:       userProfile.Email,
+		Nickname:    userProfile.Nickname,
+		AvatarURL:   userProfile.AvatarURL,
+		Bio:         userProfile.Bio,
+		IsAdmin:     userProfile.IsAdmin,
+		CreatedAt:   userProfile.CreatedAt,
+		LastLoginAt: userProfile.LastLoginAt,
 	}
 
 	c.JSON(http.StatusOK, userResp)

@@ -35,8 +35,9 @@ func InitializeApp(cfg *config.Config) (*router.Router, func(), error) {
 	userRepository := repository.NewUserRepository(db)
 	registerUseCase := user.NewRegisterUseCase(userRepository)
 	loginUseCase := user.NewLoginUseCase(userRepository)
+	getProfileUseCase := user.NewGetProfileUseCase(userRepository)
 	updateProfileUseCase := user.NewUpdateProfileUseCase(userRepository)
-	userHandler := provideUserHandler(registerUseCase, loginUseCase, updateProfileUseCase, jwtService)
+	userHandler := provideUserHandler(registerUseCase, loginUseCase, getProfileUseCase, updateProfileUseCase, jwtService)
 	postHandler := providePostHandler()
 	commentHandler := provideCommentHandler()
 	adminHandler := provideAdminHandler()
@@ -81,10 +82,11 @@ func provideJWTService(cfg *config.Config) *auth.JWTService {
 func provideUserHandler(
 	registerUC *user.RegisterUseCase,
 	loginUC *user.LoginUseCase,
+	getProfileUC *user.GetProfileUseCase,
 	updateProfileUC *user.UpdateProfileUseCase,
 	jwtService *auth.JWTService,
 ) *handler.UserHandler {
-	return handler.NewUserHandler(registerUC, loginUC, updateProfileUC, jwtService)
+	return handler.NewUserHandler(registerUC, loginUC, getProfileUC, updateProfileUC, jwtService)
 }
 
 func providePostHandler() *handler.PostHandler {
