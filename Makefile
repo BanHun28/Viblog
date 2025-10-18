@@ -21,5 +21,5 @@ down:
 	docker-compose down
 
 clean:
-	docker-compose down -v
-	docker-compose -f docker-compose.prod.yml down -v
+	docker-compose down -v --rmi clean
+	docker-compose -f docker-compose.prod.yml down -v --rmi clean
