@@ -12,6 +12,7 @@ import (
 	"github.com/yourusername/viblog/internal/infrastructure/repository"
 	"github.com/yourusername/viblog/internal/interface/http/handler"
 	"github.com/yourusername/viblog/internal/interface/http/router"
+	"github.com/yourusername/viblog/internal/usecase/post"
 	"github.com/yourusername/viblog/internal/usecase/user"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -27,12 +28,15 @@ func InitializeApp(cfg *config.Config) (*router.Router, func(), error) {
 
 		// Repositories
 		repository.NewUserRepository,
+		repository.NewPostRepository,
 
 		// Use Cases
 		user.NewRegisterUseCase,
 		user.NewLoginUseCase,
 		user.NewGetProfileUseCase,
 		user.NewUpdateProfileUseCase,
+		post.NewListUseCase,
+		post.NewGetUseCase,
 
 		// Handlers
 		provideUserHandler,
@@ -89,9 +93,11 @@ func provideUserHandler(
 	return handler.NewUserHandler(registerUC, loginUC, getProfileUC, updateProfileUC, jwtService)
 }
 
-func providePostHandler() *handler.PostHandler {
-	// TODO: Implement post use cases
-	return handler.NewPostHandler(nil)
+func providePostHandler(
+	listUC *post.ListUseCase,
+	getUC *post.GetUseCase,
+) *handler.PostHandler {
+	return handler.NewPostHandler(listUC, getUC)
 }
 
 func provideCommentHandler() *handler.CommentHandler {
