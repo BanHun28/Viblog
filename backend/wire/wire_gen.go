@@ -14,6 +14,7 @@ import (
 	"github.com/yourusername/viblog/internal/infrastructure/repository"
 	"github.com/yourusername/viblog/internal/interface/http/handler"
 	"github.com/yourusername/viblog/internal/interface/http/router"
+	"github.com/yourusername/viblog/internal/usecase/admin"
 	"github.com/yourusername/viblog/internal/usecase/user"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -40,7 +41,24 @@ func InitializeApp(cfg *config.Config) (*router.Router, func(), error) {
 	userHandler := provideUserHandler(registerUseCase, loginUseCase, getProfileUseCase, updateProfileUseCase, jwtService)
 	postHandler := providePostHandler()
 	commentHandler := provideCommentHandler()
-	adminHandler := provideAdminHandler()
+	postRepository := repository.NewPostRepository(db)
+	commentRepository := repository.NewCommentRepository(db)
+	getDashboardUseCase := admin.NewGetDashboardUseCase(userRepository, postRepository, commentRepository)
+	listUsersUseCase := admin.NewListUsersUseCase(userRepository)
+	deleteUserUseCase := admin.NewDeleteUserUseCase(userRepository)
+	listCommentsUseCase := admin.NewListCommentsUseCase(commentRepository)
+	deleteCommentUseCase := admin.NewDeleteCommentUseCase(commentRepository, postRepository)
+	categoryRepository := repository.NewCategoryRepository(db)
+	listCategoriesUseCase := admin.NewListCategoriesUseCase(categoryRepository)
+	createCategoryUseCase := admin.NewCreateCategoryUseCase(categoryRepository)
+	updateCategoryUseCase := admin.NewUpdateCategoryUseCase(categoryRepository)
+	deleteCategoryUseCase := admin.NewDeleteCategoryUseCase(categoryRepository)
+	tagRepository := repository.NewTagRepository(db)
+	listTagsUseCase := admin.NewListTagsUseCase(tagRepository)
+	createTagUseCase := admin.NewCreateTagUseCase(tagRepository)
+	updateTagUseCase := admin.NewUpdateTagUseCase(tagRepository)
+	deleteTagUseCase := admin.NewDeleteTagUseCase(tagRepository)
+	adminHandler := provideAdminHandler(getDashboardUseCase, listUsersUseCase, deleteUserUseCase, listCommentsUseCase, deleteCommentUseCase, listCategoriesUseCase, createCategoryUseCase, updateCategoryUseCase, deleteCategoryUseCase, listTagsUseCase, createTagUseCase, updateTagUseCase, deleteTagUseCase)
 	notificationHandler := provideNotificationHandler()
 	routerRouter := router.New(cfg, logger, jwtService, userHandler, postHandler, commentHandler, adminHandler, notificationHandler)
 	return routerRouter, func() {
@@ -99,9 +117,36 @@ func provideCommentHandler() *handler.CommentHandler {
 	return handler.NewCommentHandler(nil)
 }
 
-func provideAdminHandler() *handler.AdminHandler {
-
-	return handler.NewAdminHandler(nil)
+func provideAdminHandler(
+	dashboardUC *admin.GetDashboardUseCase,
+	listUsersUC *admin.ListUsersUseCase,
+	deleteUserUC *admin.DeleteUserUseCase,
+	listCommentsUC *admin.ListCommentsUseCase,
+	deleteCommentUC *admin.DeleteCommentUseCase,
+	listCategoriesUC *admin.ListCategoriesUseCase,
+	createCategoryUC *admin.CreateCategoryUseCase,
+	updateCategoryUC *admin.UpdateCategoryUseCase,
+	deleteCategoryUC *admin.DeleteCategoryUseCase,
+	listTagsUC *admin.ListTagsUseCase,
+	createTagUC *admin.CreateTagUseCase,
+	updateTagUC *admin.UpdateTagUseCase,
+	deleteTagUC *admin.DeleteTagUseCase,
+) *handler.AdminHandler {
+	return handler.NewAdminHandler(
+		dashboardUC,
+		listUsersUC,
+		deleteUserUC,
+		listCommentsUC,
+		deleteCommentUC,
+		listCategoriesUC,
+		createCategoryUC,
+		updateCategoryUC,
+		deleteCategoryUC,
+		listTagsUC,
+		createTagUC,
+		updateTagUC,
+		deleteTagUC,
+	)
 }
 
 func provideNotificationHandler() *handler.NotificationHandler {

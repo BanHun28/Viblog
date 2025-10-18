@@ -12,6 +12,7 @@ import (
 	"github.com/yourusername/viblog/internal/infrastructure/repository"
 	"github.com/yourusername/viblog/internal/interface/http/handler"
 	"github.com/yourusername/viblog/internal/interface/http/router"
+	"github.com/yourusername/viblog/internal/usecase/admin"
 	"github.com/yourusername/viblog/internal/usecase/user"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -27,12 +28,31 @@ func InitializeApp(cfg *config.Config) (*router.Router, func(), error) {
 
 		// Repositories
 		repository.NewUserRepository,
+		repository.NewPostRepository,
+		repository.NewCommentRepository,
+		repository.NewCategoryRepository,
+		repository.NewTagRepository,
 
-		// Use Cases
+		// User Use Cases
 		user.NewRegisterUseCase,
 		user.NewLoginUseCase,
 		user.NewGetProfileUseCase,
 		user.NewUpdateProfileUseCase,
+
+		// Admin Use Cases
+		admin.NewGetDashboardUseCase,
+		admin.NewListUsersUseCase,
+		admin.NewDeleteUserUseCase,
+		admin.NewListCommentsUseCase,
+		admin.NewDeleteCommentUseCase,
+		admin.NewListCategoriesUseCase,
+		admin.NewCreateCategoryUseCase,
+		admin.NewUpdateCategoryUseCase,
+		admin.NewDeleteCategoryUseCase,
+		admin.NewListTagsUseCase,
+		admin.NewCreateTagUseCase,
+		admin.NewUpdateTagUseCase,
+		admin.NewDeleteTagUseCase,
 
 		// Handlers
 		provideUserHandler,
@@ -99,9 +119,36 @@ func provideCommentHandler() *handler.CommentHandler {
 	return handler.NewCommentHandler(nil)
 }
 
-func provideAdminHandler() *handler.AdminHandler {
-	// TODO: Implement admin use cases
-	return handler.NewAdminHandler(nil)
+func provideAdminHandler(
+	dashboardUC *admin.GetDashboardUseCase,
+	listUsersUC *admin.ListUsersUseCase,
+	deleteUserUC *admin.DeleteUserUseCase,
+	listCommentsUC *admin.ListCommentsUseCase,
+	deleteCommentUC *admin.DeleteCommentUseCase,
+	listCategoriesUC *admin.ListCategoriesUseCase,
+	createCategoryUC *admin.CreateCategoryUseCase,
+	updateCategoryUC *admin.UpdateCategoryUseCase,
+	deleteCategoryUC *admin.DeleteCategoryUseCase,
+	listTagsUC *admin.ListTagsUseCase,
+	createTagUC *admin.CreateTagUseCase,
+	updateTagUC *admin.UpdateTagUseCase,
+	deleteTagUC *admin.DeleteTagUseCase,
+) *handler.AdminHandler {
+	return handler.NewAdminHandler(
+		dashboardUC,
+		listUsersUC,
+		deleteUserUC,
+		listCommentsUC,
+		deleteCommentUC,
+		listCategoriesUC,
+		createCategoryUC,
+		updateCategoryUC,
+		deleteCategoryUC,
+		listTagsUC,
+		createTagUC,
+		updateTagUC,
+		deleteTagUC,
+	)
 }
 
 func provideNotificationHandler() *handler.NotificationHandler {

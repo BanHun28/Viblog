@@ -93,3 +93,31 @@ func (r *userRepository) UpdateLastLoginAt(ctx context.Context, id uint) error {
 	now := time.Now()
 	return r.db.WithContext(ctx).Model(&entity.User{}).Where("id = ?", id).Update("last_login_at", now).Error
 }
+
+// FindAll retrieves all users with pagination
+func (r *userRepository) FindAll(ctx context.Context, page, limit int) ([]entity.User, int64, error) {
+	var users []entity.User
+	var total int64
+
+	// Get total count
+	if err := r.db.WithContext(ctx).Model(&entity.User{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated users
+	offset := (page - 1) * limit
+	err := r.db.WithContext(ctx).
+		Limit(limit).
+		Offset(offset).
+		Order("created_at DESC").
+		Find(&users).Error
+
+	return users, total, err
+}
+
+// GetTotalCount gets total count of all users
+func (r *userRepository) GetTotalCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&entity.User{}).Count(&count).Error
+	return count, err
+}
