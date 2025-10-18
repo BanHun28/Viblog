@@ -31,6 +31,7 @@ func InitializeApp(cfg *config.Config) (*router.Router, func(), error) {
 		// Use Cases
 		user.NewRegisterUseCase,
 		user.NewLoginUseCase,
+		user.NewGetProfileUseCase,
 		user.NewUpdateProfileUseCase,
 
 		// Handlers
@@ -81,10 +82,11 @@ func provideJWTService(cfg *config.Config) *auth.JWTService {
 func provideUserHandler(
 	registerUC *user.RegisterUseCase,
 	loginUC *user.LoginUseCase,
+	getProfileUC *user.GetProfileUseCase,
 	updateProfileUC *user.UpdateProfileUseCase,
 	jwtService *auth.JWTService,
 ) *handler.UserHandler {
-	return handler.NewUserHandler(registerUC, loginUC, updateProfileUC, jwtService)
+	return handler.NewUserHandler(registerUC, loginUC, getProfileUC, updateProfileUC, jwtService)
 }
 
 func providePostHandler() *handler.PostHandler {
