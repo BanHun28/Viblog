@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { postsApi } from '@/lib/api/posts'
 import { Post } from '@/types/post'
@@ -12,7 +12,7 @@ import { Container } from '@/components/ui/Container'
 import { Search as SearchIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-export default function SearchPage() {
+function SearchContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [query, setQuery] = useState(searchParams.get('q') || '')
@@ -129,5 +129,13 @@ export default function SearchPage() {
         </div>
       )}
     </Container>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Spinner size="lg" /></div>}>
+      <SearchContent />
+    </Suspense>
   )
 }

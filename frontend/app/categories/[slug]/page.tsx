@@ -12,6 +12,8 @@ import { Container } from '@/components/ui/Container'
 import { Badge } from '@/components/ui/Badge'
 import { Folder } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default function CategoryPage({ params }: { params: { slug: string } }) {
   const searchParams = useSearchParams()
   const [posts, setPosts] = useState<Post[]>([])

@@ -12,6 +12,8 @@ import { Container } from '@/components/ui/Container'
 import { Badge } from '@/components/ui/Badge'
 import { Tag as TagIcon } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default function TagPage({ params }: { params: { slug: string } }) {
   const searchParams = useSearchParams()
   const [posts, setPosts] = useState<Post[]>([])

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { postsApi } from '@/lib/api/posts'
 import { Post } from '@/types/post'
@@ -10,7 +10,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Alert } from '@/components/ui/Alert'
 import { Container } from '@/components/ui/Container'
 
-export default function PostsPage() {
+function PostsContent() {
   const searchParams = useSearchParams()
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
@@ -94,5 +94,13 @@ export default function PostsPage() {
         </>
       )}
     </Container>
+  )
+}
+
+export default function PostsPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Spinner size="lg" /></div>}>
+      <PostsContent />
+    </Suspense>
   )
 }
