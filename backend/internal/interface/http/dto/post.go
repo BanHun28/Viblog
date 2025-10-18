@@ -86,20 +86,6 @@ type AuthorResponse struct {
 	AvatarURL *string `json:"avatar_url,omitempty"`
 }
 
-// CategoryResponse represents category information in post response
-type CategoryResponse struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
-	Slug string `json:"slug"`
-}
-
-// TagResponse represents tag information in post response
-type TagResponse struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
-	Slug string `json:"slug"`
-}
-
 // PaginationResponse represents pagination metadata
 type PaginationResponse struct {
 	Page       int   `json:"page"`

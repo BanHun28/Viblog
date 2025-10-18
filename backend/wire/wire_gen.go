@@ -45,7 +45,6 @@ func InitializeApp(cfg *config.Config) (*router.Router, func(), error) {
 	getUseCase := post.NewGetUseCase(postRepository)
 	postHandler := providePostHandler(listUseCase, getUseCase)
 	commentHandler := provideCommentHandler()
-	postRepository := repository.NewPostRepository(db)
 	commentRepository := repository.NewCommentRepository(db)
 	getDashboardUseCase := admin.NewGetDashboardUseCase(userRepository, postRepository, commentRepository)
 	listUsersUseCase := admin.NewListUsersUseCase(userRepository)

@@ -6,56 +6,51 @@ import (
 	"github.com/yourusername/viblog/internal/domain/entity"
 )
 
-// PostRepository defines the interface for post data access
+// PostRepository defines methods for post persistence
 type PostRepository interface {
-	// Create creates a new post
+	// Basic CRUD
 	Create(ctx context.Context, post *entity.Post) error
-
-	// FindByID finds a post by ID
-	FindByID(ctx context.Context, id uint) (*entity.Post, error)
-
-	// FindBySlug finds a post by slug
-	FindBySlug(ctx context.Context, slug string) (*entity.Post, error)
-
-	// FindAll retrieves all posts with pagination
-	FindAll(ctx context.Context, page, limit int) ([]entity.Post, int64, error)
-
-	// FindPublished retrieves published posts with pagination
-	FindPublished(ctx context.Context, page, limit int) ([]entity.Post, int64, error)
-
-	// FindByCategory retrieves posts by category with pagination
-	FindByCategory(ctx context.Context, categoryID uint, page, limit int) ([]entity.Post, int64, error)
-
-	// FindByTag retrieves posts by tag with pagination
-	FindByTag(ctx context.Context, tagID uint, page, limit int) ([]entity.Post, int64, error)
-
-	// Search searches posts by query
-	Search(ctx context.Context, query string) ([]entity.Post, error)
-
-	// Update updates a post
+	GetByID(ctx context.Context, id uint) (*entity.Post, error)
+	GetBySlug(ctx context.Context, slug string) (*entity.Post, error)
 	Update(ctx context.Context, post *entity.Post) error
-
-	// Delete deletes a post (soft delete)
 	Delete(ctx context.Context, id uint) error
 
-	// IncrementViewCount increments the view count for a post
-	IncrementViewCount(ctx context.Context, id uint) error
+	// List operations
+	List(ctx context.Context, page, limit int) ([]*entity.Post, int64, error)
+	ListPublished(ctx context.Context, page, limit int) ([]*entity.Post, int64, error)
+	ListByCategory(ctx context.Context, categorySlug string, page, limit int) ([]*entity.Post, int64, error)
+	ListByTag(ctx context.Context, tagSlug string, page, limit int) ([]*entity.Post, int64, error)
+	ListByAuthor(ctx context.Context, authorID uint, page, limit int) ([]*entity.Post, int64, error)
 
-	// IncrementLikeCount increments the like count for a post
-	IncrementLikeCount(ctx context.Context, id uint) error
+	// Search
+	Search(ctx context.Context, query string, page, limit int) ([]*entity.Post, int64, error)
 
-	// DecrementLikeCount decrements the like count for a post
-	DecrementLikeCount(ctx context.Context, id uint) error
+	// View tracking
+	IncrementViewCount(ctx context.Context, postID uint) error
+	HasViewedRecently(ctx context.Context, postID uint, ipAddress string) (bool, error)
+	RecordView(ctx context.Context, postID uint, ipAddress, userAgent string) error
 
-	// IncrementCommentCount increments the comment count for a post
-	IncrementCommentCount(ctx context.Context, id uint) error
+	// Like operations
+	AddLike(ctx context.Context, postID, userID uint) error
+	RemoveLike(ctx context.Context, postID, userID uint) error
+	HasLiked(ctx context.Context, postID, userID uint) (bool, error)
+	IncrementLikeCount(ctx context.Context, postID uint) error
+	DecrementLikeCount(ctx context.Context, postID uint) error
 
-	// DecrementCommentCount decrements the comment count for a post
-	DecrementCommentCount(ctx context.Context, id uint) error
+	// Bookmark operations
+	AddBookmark(ctx context.Context, postID, userID uint) error
+	RemoveBookmark(ctx context.Context, postID, userID uint) error
+	HasBookmarked(ctx context.Context, postID, userID uint) (bool, error)
+	IncrementBookmarkCount(ctx context.Context, postID uint) error
+	DecrementBookmarkCount(ctx context.Context, postID uint) error
+	ListBookmarkedByUser(ctx context.Context, userID uint, page, limit int) ([]*entity.Post, int64, error)
 
-	// GetTotalCount gets total count of all posts
+	// Utilities
+	SlugExists(ctx context.Context, slug string, excludeID *uint) (bool, error)
+	IncrementCommentCount(ctx context.Context, postID uint) error
+	DecrementCommentCount(ctx context.Context, postID uint) error
+
+	// Admin-specific methods
 	GetTotalCount(ctx context.Context) (int64, error)
-
-	// GetPublishedCount gets count of published posts
 	GetPublishedCount(ctx context.Context) (int64, error)
 }

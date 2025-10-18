@@ -421,3 +421,21 @@ func (r *postRepository) DecrementCommentCount(ctx context.Context, postID uint)
 		Where("id = ?", postID).
 		UpdateColumn("comment_count", gorm.Expr("comment_count - ?", 1)).Error
 }
+
+// GetTotalCount gets the total count of all posts
+func (r *postRepository) GetTotalCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&entity.Post{}).Count(&count).Error
+	return count, err
+}
+
+// GetPublishedCount gets the count of published posts
+func (r *postRepository) GetPublishedCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).
+		Model(&entity.Post{}).
+		Where("status = ?", "published").
+		Where("published_at <= ?", time.Now()).
+		Count(&count).Error
+	return count, err
+}
