@@ -15,6 +15,7 @@ import (
 	"github.com/yourusername/viblog/internal/interface/http/handler"
 	"github.com/yourusername/viblog/internal/interface/http/router"
 	"github.com/yourusername/viblog/internal/usecase/admin"
+	"github.com/yourusername/viblog/internal/usecase/post"
 	"github.com/yourusername/viblog/internal/usecase/user"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -39,7 +40,10 @@ func InitializeApp(cfg *config.Config) (*router.Router, func(), error) {
 	getProfileUseCase := user.NewGetProfileUseCase(userRepository)
 	updateProfileUseCase := user.NewUpdateProfileUseCase(userRepository)
 	userHandler := provideUserHandler(registerUseCase, loginUseCase, getProfileUseCase, updateProfileUseCase, jwtService)
-	postHandler := providePostHandler()
+	postRepository := repository.NewPostRepository(db)
+	listUseCase := post.NewListUseCase(postRepository)
+	getUseCase := post.NewGetUseCase(postRepository)
+	postHandler := providePostHandler(listUseCase, getUseCase)
 	commentHandler := provideCommentHandler()
 	postRepository := repository.NewPostRepository(db)
 	commentRepository := repository.NewCommentRepository(db)
@@ -107,9 +111,11 @@ func provideUserHandler(
 	return handler.NewUserHandler(registerUC, loginUC, getProfileUC, updateProfileUC, jwtService)
 }
 
-func providePostHandler() *handler.PostHandler {
-
-	return handler.NewPostHandler(nil)
+func providePostHandler(
+	listUC *post.ListUseCase,
+	getUC *post.GetUseCase,
+) *handler.PostHandler {
+	return handler.NewPostHandler(listUC, getUC)
 }
 
 func provideCommentHandler() *handler.CommentHandler {
