@@ -1,3 +1,12 @@
-export function MarkdownViewer() {
-  return <div>MarkdownViewer</div>
+interface MarkdownViewerProps {
+  content: string
+}
+
+export function MarkdownViewer({ content }: MarkdownViewerProps) {
+  return (
+    <div
+      className="prose dark:prose-invert max-w-none"
+      dangerouslySetInnerHTML={{ __html: content }}
+    />
+  )
 }
