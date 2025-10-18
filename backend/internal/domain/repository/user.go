@@ -34,4 +34,10 @@ type UserRepository interface {
 
 	// UpdateLastLoginAt updates the last login timestamp
 	UpdateLastLoginAt(ctx context.Context, id uint) error
+
+	// FindAll retrieves all users with pagination
+	FindAll(ctx context.Context, page, limit int) ([]entity.User, int64, error)
+
+	// GetTotalCount gets total count of all users
+	GetTotalCount(ctx context.Context) (int64, error)
 }

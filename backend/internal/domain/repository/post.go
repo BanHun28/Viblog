@@ -49,4 +49,8 @@ type PostRepository interface {
 	SlugExists(ctx context.Context, slug string, excludeID *uint) (bool, error)
 	IncrementCommentCount(ctx context.Context, postID uint) error
 	DecrementCommentCount(ctx context.Context, postID uint) error
+
+	// Admin-specific methods
+	GetTotalCount(ctx context.Context) (int64, error)
+	GetPublishedCount(ctx context.Context) (int64, error)
 }
