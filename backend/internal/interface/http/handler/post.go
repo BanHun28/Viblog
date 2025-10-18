@@ -2,18 +2,25 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/yourusername/viblog/internal/interface/http/presenter"
+	postUseCase "github.com/yourusername/viblog/internal/usecase/post"
 )
 
 // PostHandler handles post-related HTTP requests
 type PostHandler struct {
-	// TODO: Add use case dependencies
+	listUseCase *postUseCase.ListUseCase
+	getUseCase  *postUseCase.GetUseCase
 }
 
 // NewPostHandler creates a new PostHandler
-func NewPostHandler(useCase interface{}) *PostHandler {
-	return &PostHandler{}
+func NewPostHandler(listUseCase *postUseCase.ListUseCase, getUseCase *postUseCase.GetUseCase) *PostHandler {
+	return &PostHandler{
+		listUseCase: listUseCase,
+		getUseCase:  getUseCase,
+	}
 }
 
 // List lists posts
@@ -27,7 +34,42 @@ func NewPostHandler(useCase interface{}) *PostHandler {
 // @Success 200 {object} map[string]interface{}
 // @Router /posts [get]
 func (h *PostHandler) List(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "List posts - TODO"})
+	// Parse query parameters
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+
+	// Get posts
+	posts, total, err := h.listUseCase.Execute(c.Request.Context(), page, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve posts"})
+		return
+	}
+
+	// Get user ID from context (if authenticated)
+	var userID *uint
+	if uid, exists := c.Get("user_id"); exists {
+		if id, ok := uid.(uint); ok {
+			userID = &id
+		}
+	}
+
+	// Get liked and bookmarked status
+	var likedPosts, bookmarkedPosts map[uint]bool
+	if userID != nil {
+		likedPosts, bookmarkedPosts, err = h.listUseCase.GetLikedAndBookmarkedStatus(c.Request.Context(), posts, *userID)
+		if err != nil {
+			likedPosts = make(map[uint]bool)
+			bookmarkedPosts = make(map[uint]bool)
+		}
+	} else {
+		likedPosts = make(map[uint]bool)
+		bookmarkedPosts = make(map[uint]bool)
+	}
+
+	// Convert to response
+	response := presenter.ToPostListResponse(posts, total, page, limit, userID, likedPosts, bookmarkedPosts)
+
+	c.JSON(http.StatusOK, response)
 }
 
 // Get retrieves a single post
@@ -41,7 +83,33 @@ func (h *PostHandler) List(c *gin.Context) {
 // @Failure 404 {object} map[string]interface{}
 // @Router /posts/{id} [get]
 func (h *PostHandler) Get(c *gin.Context) {
-	c.JSON(http.StatusNotImplemented, gin.H{"message": "Get post - TODO"})
+	// Parse post ID
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+		return
+	}
+
+	// Get post
+	post, err := h.getUseCase.Execute(c.Request.Context(), uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+		return
+	}
+
+	// Get user ID from context (if authenticated)
+	var isLiked, isBookmarked bool
+	if uid, exists := c.Get("user_id"); exists {
+		if userId, ok := uid.(uint); ok {
+			isLiked, isBookmarked, _ = h.getUseCase.GetLikedAndBookmarkedStatus(c.Request.Context(), post.ID, userId)
+		}
+	}
+
+	// Convert to response
+	response := presenter.ToPostResponse(post, isLiked, isBookmarked)
+
+	c.JSON(http.StatusOK, response)
 }
 
 // Search searches posts
